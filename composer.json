@@ -1,0 +1,34 @@
+{
+    "name": "topthink/think-workflow",
+    "description": "Workflow For ThinkPHP6",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "yunwuxin",
+            "email": "448901948@qq.com"
+        }
+    ],
+    "require": {
+        "topthink/framework": "^6.0",
+        "symfony/workflow": "^4.4|^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "think\\workflow\\": "src"
+        }
+    },
+    "extra": {
+        "think": {
+            "services": [
+                "think\\workflow\\Service"
+            ],
+            "config": {
+                "workflow": "src/config.php"
+            }
+        }
+    },
+    "require-dev": {
+        "topthink/think-annotation": "^1.1",
+        "topthink/think-orm": "2.0.x-dev"
+    }
+}
