@@ -65,7 +65,7 @@ class Service extends \think\Service
                 foreach ($annotations as $annotation) {
                     if ($annotation instanceof StateMachine) {
                         foreach ($annotation->transitions as $transition) {
-                            $generator->addMethod($transition->value, 'void', ['$context = []'], '');
+                            $generator->addMethod($transition->value, 'void', ['array $context = []'], '');
                         }
                     }
                 }
