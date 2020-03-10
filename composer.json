@@ -29,6 +29,6 @@
     },
     "require-dev": {
         "topthink/think-annotation": "^1.1",
-        "topthink/think-orm": "2.0.x-dev"
+        "topthink/think-ide-helper": "v1.0"
     }
 }
