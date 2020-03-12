@@ -9,6 +9,7 @@ use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\SupportStrategy\InstanceOfSupportStrategy;
 use Symfony\Component\Workflow\Transition;
 use Symfony\Component\Workflow\Workflow;
+use think\helper\Str;
 use think\ide\ModelGenerator;
 use think\Model;
 use think\workflow\annotation\StateMachine;
@@ -51,6 +52,10 @@ class Service extends \think\Service
                                 call_user_func([$model, 'macro'], $transition->value, function ($context = []) use ($transition, $stateMachine) {
                                     $stateMachine->apply($this, $transition->value, $context);
                                 });
+
+                                call_user_func([$model, 'macro'], 'can' . Str::studly($transition->value), function () use ($transition, $stateMachine) {
+                                    $stateMachine->can($this, $transition->value);
+                                });
                             }
                         }
                     }
@@ -65,7 +70,8 @@ class Service extends \think\Service
                 foreach ($annotations as $annotation) {
                     if ($annotation instanceof StateMachine) {
                         foreach ($annotation->transitions as $transition) {
-                            $generator->addMethod($transition->value, 'void', ['array $context = []'], '');
+                            $generator->addMethod($transition->value, 'void', ['array $context = []'], false);
+                            $generator->addMethod('can' . Str::studly($transition->value), 'boolean', [], false);
                         }
                     }
                 }
