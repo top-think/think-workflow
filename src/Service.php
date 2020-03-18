@@ -39,7 +39,11 @@ class Service extends \think\Service
                             $builder = new DefinitionBuilder();
                             $builder->addPlaces($annotation->places);
                             foreach ($annotation->transitions as $transition) {
-                                $builder->addTransition(new Transition($transition->value, $transition->from, $transition->to));
+                                foreach ((array) $transition->from as $from) {
+                                    foreach ((array) $transition->to as $to) {
+                                        $builder->addTransition(new Transition($transition->value, $from, $to));
+                                    }
+                                }
                             }
                             $builder->setInitialPlaces($annotation->initial);
                             $definition   = $builder->build();
@@ -54,7 +58,7 @@ class Service extends \think\Service
                                 });
 
                                 call_user_func([$model, 'macro'], 'can' . Str::studly($transition->value), function () use ($transition, $stateMachine) {
-                                    $stateMachine->can($this, $transition->value);
+                                    return $stateMachine->can($this, $transition->value);
                                 });
                             }
                         }
