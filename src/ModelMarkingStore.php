@@ -17,12 +17,15 @@ class ModelMarkingStore implements MarkingStoreInterface
         $this->map      = $map;
     }
 
-    protected function getPlace($marking)
+    protected function convert($value, $flip = true)
     {
         if (empty($this->map)) {
-            return $marking;
+            return $value;
         }
-        return $this->map[$marking];
+        if ($flip) {
+            return array_flip($this->map)[$value];
+        }
+        return $this->map[$value];
     }
 
     /**
@@ -31,7 +34,7 @@ class ModelMarkingStore implements MarkingStoreInterface
      */
     public function getMarking(object $subject)
     {
-        $marking = $this->getPlace($subject->getAttr($this->property));
+        $marking = $this->convert($subject->getAttr($this->property));
 
         if (!$marking) {
             return new Marking();
@@ -52,7 +55,7 @@ class ModelMarkingStore implements MarkingStoreInterface
 
         $marking = key($marking);
 
-        $subject->setAttr($this->property, $this->getPlace($marking));
+        $subject->setAttr($this->property, $this->convert($marking, false));
 
         $subject->save($context);
     }
