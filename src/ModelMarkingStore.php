@@ -9,10 +9,20 @@ use think\Model;
 class ModelMarkingStore implements MarkingStoreInterface
 {
     private $property;
+    private $map;
 
-    public function __construct(string $property = 'status')
+    public function __construct(string $property = 'status', ?array $map = null)
     {
         $this->property = $property;
+        $this->map      = $map;
+    }
+
+    protected function getPlace($marking)
+    {
+        if (empty($this->map)) {
+            return $marking;
+        }
+        return $this->map[$marking];
     }
 
     /**
@@ -21,7 +31,7 @@ class ModelMarkingStore implements MarkingStoreInterface
      */
     public function getMarking(object $subject)
     {
-        $marking = $subject->getAttr($this->property);
+        $marking = $this->getPlace($subject->getAttr($this->property));
 
         if (!$marking) {
             return new Marking();
@@ -42,7 +52,7 @@ class ModelMarkingStore implements MarkingStoreInterface
 
         $marking = key($marking);
 
-        $subject->setAttr($this->property, $marking);
+        $subject->setAttr($this->property, $this->getPlace($marking));
 
         $subject->save($context);
     }

@@ -37,7 +37,14 @@ class Service extends \think\Service
                     foreach ($annotations as $annotation) {
                         if ($annotation instanceof StateMachine) {
                             $builder = new DefinitionBuilder();
-                            $builder->addPlaces($annotation->places);
+                            $map     = null;
+                            if (isset($annotation->places[0])) {
+                                $places = $annotation->places;
+                            } else {
+                                $places = array_keys($annotation->places);
+                                $map    = $annotation->places;
+                            }
+                            $builder->addPlaces($places);
                             foreach ($annotation->transitions as $transition) {
                                 foreach ((array) $transition->from as $from) {
                                     foreach ((array) $transition->to as $to) {
@@ -47,7 +54,7 @@ class Service extends \think\Service
                             }
                             $builder->setInitialPlaces($annotation->initial);
                             $definition   = $builder->build();
-                            $marking      = new ModelMarkingStore($annotation->value);
+                            $marking      = new ModelMarkingStore($annotation->value, $map);
                             $stateMachine = new Workflow($definition, $marking, null, get_class($model) . "@" . $annotation->value);
 
                             $registry->addWorkflow($stateMachine, new InstanceOfSupportStrategy(get_class($model)));
