@@ -2,25 +2,17 @@
 
 namespace think\workflow\annotation;
 
-use Doctrine\Common\Annotations\Annotation;
+use Attribute;
 
-/**
- * Class StateMachine
- * @package think\workflow\annotation
- * @Annotation
- * @Annotation\Target({"CLASS"})
- */
-final class StateMachine extends Annotation
+#[Attribute(Attribute::TARGET_CLASS)]
+final class StateMachine
 {
-    /**
-     * @var string[]
-     */
-    public $places;
-
-    /**
-     * @var Transition[]
-     */
-    public $transitions;
-
-    public $initial;
+    public function __construct(
+        public string $name,
+        public string|array $places,
+        public array $transitions,
+        public $initial = null
+    )
+    {
+    }
 }
