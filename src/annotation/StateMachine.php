@@ -9,8 +9,8 @@ final class StateMachine
 {
     public function __construct(
         public string $name,
-        public string|array $places,
-        public array $transitions,
+        public array $places = [],
+        public array $transitions = [],
         public $initial = null
     )
     {

@@ -3,10 +3,8 @@
 namespace think\workflow;
 
 use ReflectionClass;
-use Symfony\Component\Workflow\DefinitionBuilder;
 use Symfony\Component\Workflow\Registry;
 use Symfony\Component\Workflow\SupportStrategy\InstanceOfSupportStrategy;
-use Symfony\Component\Workflow\Transition;
 use Symfony\Component\Workflow\Workflow;
 use think\helper\Str;
 use think\ide\ModelGenerator;
@@ -29,40 +27,39 @@ class Service extends \think\Service
 
                 foreach ($attributes as $attribute) {
 
-                    $builder = new DefinitionBuilder();
-                    $map     = null;
-
                     /** @var StateMachine $annotation */
                     $annotation = $attribute->newInstance();
 
-                    if (isset($annotation->places[0])) {
-                        $places = $annotation->places;
+                    if (class_exists($annotation->name)
+                        && is_subclass_of($annotation->name, \think\workflow\StateMachine::class)
+                    ) {
+                        $stateMachine = new $annotation->name;
                     } else {
-                        $places = array_keys($annotation->places);
-                        $map    = $annotation->places;
-                    }
-                    $builder->addPlaces($places);
-                    foreach ($annotation->transitions as $name => $transition) {
-                        foreach ((array) $transition[0] as $from) {
-                            foreach ((array) $transition[1] as $to) {
-                                $builder->addTransition(new Transition($name, $from, $to));
-                            }
-                        }
-                    }
-                    $builder->setInitialPlaces($annotation->initial);
-                    $definition   = $builder->build();
-                    $marking      = new ModelMarkingStore($annotation->name, $map);
-                    $stateMachine = new Workflow($definition, $marking, null, get_class($model) . "@" . $annotation->name);
+                        $stateMachine = new \think\workflow\StateMachine();
 
-                    $registry->addWorkflow($stateMachine, new InstanceOfSupportStrategy(get_class($model)));
+                        $stateMachine->name        = $annotation->name;
+                        $stateMachine->places      = $annotation->places;
+                        $stateMachine->transitions = $annotation->transitions;
+                        $stateMachine->initial     = $annotation->initial;
+                    }
 
-                    foreach ($annotation->transitions as $name => $transition) {
-                        call_user_func([$model, 'macro'], $name, function ($context = []) use ($name, $stateMachine) {
-                            $stateMachine->apply($this, $name, $context);
+                    $definition = $stateMachine->buildDefinition();
+
+                    $marking = new ModelMarkingStore($stateMachine->name);
+
+                    $workflow = new Workflow($definition, $marking, null, get_class($model) . "@" . $stateMachine->name);
+
+                    $registry->addWorkflow($workflow, new InstanceOfSupportStrategy(get_class($model)));
+
+                    foreach ($stateMachine->transitions as $name => $transition) {
+                        call_user_func([$model, 'macro'], $name, function ($context = []) use ($stateMachine, $name, $workflow) {
+                            $stateMachine->trigger('before', $name, $this);
+                            $workflow->apply($this, $name, $context);
+                            $stateMachine->trigger('after', $name, $this);
                         });
 
-                        call_user_func([$model, 'macro'], 'can' . Str::studly($name), function () use ($name, $stateMachine) {
-                            return $stateMachine->can($this, $name);
+                        call_user_func([$model, 'macro'], 'can' . Str::studly($name), function () use ($name, $workflow) {
+                            return $workflow->can($this, $name);
                         });
                     }
                 }
