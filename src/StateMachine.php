@@ -44,4 +44,16 @@ class StateMachine
 
         return $builder->build();
     }
+
+    public static function makeWithAnnotation(annotation\StateMachine $annotation)
+    {
+        $stateMachine = new self();
+
+        $stateMachine->name        = $annotation->name;
+        $stateMachine->places      = $annotation->places;
+        $stateMachine->transitions = $annotation->transitions;
+        $stateMachine->initial     = $annotation->initial;
+
+        return $stateMachine;
+    }
 }

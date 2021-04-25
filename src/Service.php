@@ -35,12 +35,7 @@ class Service extends \think\Service
                     ) {
                         $stateMachine = new $annotation->name;
                     } else {
-                        $stateMachine = new \think\workflow\StateMachine();
-
-                        $stateMachine->name        = $annotation->name;
-                        $stateMachine->places      = $annotation->places;
-                        $stateMachine->transitions = $annotation->transitions;
-                        $stateMachine->initial     = $annotation->initial;
+                        $stateMachine = \think\workflow\StateMachine::makeWithAnnotation($annotation);
                     }
 
                     $definition = $stateMachine->buildDefinition();
@@ -72,9 +67,12 @@ class Service extends \think\Service
             $attributes = $generator->getReflection()->getAttributes(StateMachine::class);
 
             foreach ($attributes as $attribute) {
+                /** @var StateMachine $annotation */
                 $annotation = $attribute->newInstance();
 
-                foreach ($annotation->transitions as $name => $transition) {
+                $stateMachine = \think\workflow\StateMachine::makeWithAnnotation($annotation);
+
+                foreach ($stateMachine->transitions as $name => $transition) {
                     $generator->addMethod($name, 'void', ['array $context = []'], false);
                     $generator->addMethod('can' . Str::studly($name), 'boolean', [], false);
                 }
