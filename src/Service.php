@@ -26,17 +26,7 @@ class Service extends \think\Service
                 $attributes = (new ReflectionClass($model))->getAttributes(StateMachine::class);
 
                 foreach ($attributes as $attribute) {
-
-                    /** @var StateMachine $annotation */
-                    $annotation = $attribute->newInstance();
-
-                    if (class_exists($annotation->name)
-                        && is_subclass_of($annotation->name, \think\workflow\StateMachine::class)
-                    ) {
-                        $stateMachine = new $annotation->name;
-                    } else {
-                        $stateMachine = \think\workflow\StateMachine::makeWithAnnotation($annotation);
-                    }
+                    $stateMachine = \think\workflow\StateMachine::make($attribute);
 
                     $definition = $stateMachine->buildDefinition();
 
@@ -67,10 +57,7 @@ class Service extends \think\Service
             $attributes = $generator->getReflection()->getAttributes(StateMachine::class);
 
             foreach ($attributes as $attribute) {
-                /** @var StateMachine $annotation */
-                $annotation = $attribute->newInstance();
-
-                $stateMachine = \think\workflow\StateMachine::makeWithAnnotation($annotation);
+                $stateMachine = \think\workflow\StateMachine::make($attribute);
 
                 foreach ($stateMachine->transitions as $name => $transition) {
                     $generator->addMethod($name, 'void', ['array $context = []'], false);

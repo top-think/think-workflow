@@ -2,6 +2,7 @@
 
 namespace think\workflow;
 
+use ReflectionAttribute;
 use Symfony\Component\Workflow\DefinitionBuilder;
 use Symfony\Component\Workflow\Transition;
 use think\helper\Str;
@@ -45,14 +46,23 @@ class StateMachine
         return $builder->build();
     }
 
-    public static function makeWithAnnotation(annotation\StateMachine $annotation)
+    public static function make(ReflectionAttribute $attribute)
     {
-        $stateMachine = new self();
+        /** @var annotation\StateMachine $annotation */
+        $annotation = $attribute->newInstance();
 
-        $stateMachine->name        = $annotation->name;
-        $stateMachine->places      = $annotation->places;
-        $stateMachine->transitions = $annotation->transitions;
-        $stateMachine->initial     = $annotation->initial;
+        if (class_exists($annotation->name)
+            && is_subclass_of($annotation->name, self::class)
+        ) {
+            $stateMachine = new $annotation->name;
+        } else {
+            $stateMachine = new self();
+
+            $stateMachine->name        = $annotation->name;
+            $stateMachine->places      = $annotation->places;
+            $stateMachine->transitions = $annotation->transitions;
+            $stateMachine->initial     = $annotation->initial;
+        }
 
         return $stateMachine;
     }
