@@ -10,7 +10,7 @@
     ],
     "require": {
         "php": "^8.0",
-        "topthink/framework": "^6.0",
+        "topthink/framework": "^6.0|^8.0",
         "symfony/workflow": "^5.0"
     },
     "autoload": {
